@@ -1,0 +1,19 @@
+SET TIME ZONE 'UTC';
+
+DROP TYPE IF EXISTS ACCSTATUS;
+DROP TYPE IF EXISTS PERMISSIONS;
+CREATE TYPE ACCSTATUS AS ENUM ('active', 'disabled');
+CREATE TYPE PERMISSIONS AS ENUM ('admin', 'moderator', 'photographer');
+
+CREATE TABLE Users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    account_status ACCSTATUS NOT NULL,
+    user_perms PERMISSIONS NOT NULL,
+    created TIMESTAMPTZ NOT NULL,
+    last_login TIMESTAMPTZ
+);
