@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     .nest("/auth", auth::routes())
     .with_state(state);
 
-    let host_addr = SocketAddr::from(([127,0,0,1], 8080));
+    let host_addr = SocketAddr::from(([127,0,0,1], 31337));
     let listener = tokio::net::TcpListener::bind(host_addr).await.unwrap();
 
     trace!(target: "main", "Listening on {host_addr}\n");
