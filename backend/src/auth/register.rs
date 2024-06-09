@@ -1,5 +1,6 @@
 use axum::{http::StatusCode, Json};
 use axum::extract::State;
+use log::{info, error};
 use std::sync::Arc;
 use serde::Deserialize;
 use axum::response::IntoResponse;
@@ -40,7 +41,12 @@ pub async fn api_register(State(state): State<Arc<SharedState>>, payload: Json<R
     .bind(&payload.email)
     .bind(&payload.password)
     .execute(&state.database).await {
-        Ok(_) => (StatusCode::CREATED, "User registered successfully.").into_response(),
-        Err(err) => AuthError::Other(err.to_string()).into_response()
+        Ok(_) => {
+            info!(target: "auth", "User {} registered successfully.", payload.username);
+            return (StatusCode::CREATED, "User registered successfully.").into_response(); }
+        Err(err) => {
+            error!(target: "auth", "Failed to register user {{username: {}, first_name: {}, last_name: {}, email: {} }}", 
+            payload.username, payload.first_name, payload.last_name, payload.email);
+            return AuthError::Other(err.to_string()).into_response();}
     }
 }

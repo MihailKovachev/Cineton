@@ -26,3 +26,4 @@ Cargo.lock
 .ionide
 
 db_config.json
+log/*
