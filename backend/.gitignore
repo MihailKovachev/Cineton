@@ -27,3 +27,4 @@ Cargo.lock
 
 db_config.json
 log/*
+requests/ZAP/*

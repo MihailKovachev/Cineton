@@ -1,6 +1,6 @@
 use std::{error::Error, net::SocketAddr, sync::Arc};
 
-use log::{trace, error};
+use log::*;
 
 pub mod api;
 pub mod db;

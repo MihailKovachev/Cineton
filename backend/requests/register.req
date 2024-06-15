@@ -1,0 +1,11 @@
+POST /auth/register HTTP/1.1
+Host: localhost:31337
+Content-Type: application/json
+
+{
+    "username" : "",
+    "first_name" : "",
+    "last_name" : "",
+    "email" : "",
+    "password" : ""
+}
