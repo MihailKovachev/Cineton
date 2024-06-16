@@ -7,7 +7,9 @@ pub mod login;
 pub mod register;
 
 pub fn routes() -> Router<Arc<SharedState>> {
-    Router::new().route("/register", post(register::api_register))
+    Router::new()
+    .route("/register", post(register::auth_register))
+    .route("/login", post(login::auth_login))
 }
 
 #[derive(Debug)]

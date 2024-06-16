@@ -1,4 +1,5 @@
 use std::{error::Error, net::SocketAddr, sync::Arc};
+use ring::rand::{SecureRandom, SystemRandom};
 
 use log::*;
 
@@ -8,7 +9,8 @@ pub mod auth;
 
 #[derive(Clone)]
 pub struct SharedState {
-    database: sqlx::Pool<sqlx::Postgres>
+    database: sqlx::Pool<sqlx::Postgres>,
+    rng: SystemRandom
 }
 
 #[tokio::main]
@@ -17,7 +19,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
     log4rs::init_file("log4rs.yaml", Default::default()).expect("Failed to read configuration for logging!");
     trace!(target: "main", "Initialised logging.");
 
-    let state = Arc::new(SharedState {database: db::connect().await? });
+    // Initialise a secure random number generator
+    let rng = SystemRandom::new();
+    {
+        // This is done in order to reduce latency in future calls to "fill"
+        let mut initialisation_buffer = [0; 128];
+        rng.fill(&mut initialisation_buffer).expect("Failed to initialize random number generator!");
+    }
+
+    trace!(target: "main", "Initialised secure random number generator.");
+
+    let state = Arc::new(SharedState { database: db::connect().await?, rng });
     
     sqlx::migrate!("./migrations").run(&state.database).await?;
     trace!(target: "main", "Initialised database.");

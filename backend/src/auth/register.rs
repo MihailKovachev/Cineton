@@ -91,7 +91,7 @@ pub struct RegisterPayload {
     last_name: String
 }
 
-pub async fn api_register(State(state): State<Arc<SharedState>>, payload: Json<RegisterPayload>) -> impl IntoResponse {
+pub async fn auth_register(State(state): State<Arc<SharedState>>, payload: Json<RegisterPayload>) -> impl IntoResponse {
 
     match validate_username(&payload.username) {
         Ok(_) => (),
@@ -121,7 +121,7 @@ pub async fn api_register(State(state): State<Arc<SharedState>>, payload: Json<R
 
     match sqlx::query(
         r#"
-        INSERT INTO Users (username, first_name, last_name, email, password_hash, account_status, user_perms, created, last_login)
+        INSERT INTO users (username, first_name, last_name, email, password, account_status, user_perms, created, last_login)
         VALUES ($1, $2, $3, $4, crypt($5, gen_salt('bf')), 'active', 'photographer', now(), NULL);
         "#
     )
