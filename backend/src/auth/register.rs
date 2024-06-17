@@ -91,7 +91,7 @@ pub struct RegisterPayload {
     last_name: String
 }
 
-pub async fn auth_register(State(state): State<Arc<SharedState>>, payload: Json<RegisterPayload>) -> impl IntoResponse {
+pub async fn auth_register(State(state): State<Arc<SharedState>>, payload: Json<RegisterPayload>) -> axum::response::Response {
 
     match validate_username(&payload.username) {
         Ok(_) => (),

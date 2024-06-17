@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 use log::*;
 
-use base64::prelude::*;
+use super::session::create_session;
 
 #[derive(Debug, Deserialize)]
 pub struct LoginPayload {
@@ -46,7 +46,7 @@ impl IntoResponse for LoginError {
     }
 }
 
-pub async fn auth_login(State(state): State<Arc<SharedState>>, payload: Json<LoginPayload>) -> impl IntoResponse {
+pub async fn auth_login(State(state): State<Arc<SharedState>>, payload: Json<LoginPayload>) -> axum::response::Response {
     // Check credentials
     if payload.username.is_empty() { return LoginError::UsernameEmpty.into_response(); };
     if payload.password.is_empty() { return LoginError::PasswordEmpty.into_response(); };
@@ -60,26 +60,17 @@ pub async fn auth_login(State(state): State<Arc<SharedState>>, payload: Json<Log
                 return (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error.").into_response();
             };
 
-            // Generate session
-            let Ok(session_id_bytes) = ring::rand::generate::<[u8; 8]>(&state.rng) else {
-                return (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error").into_response();
-            };
-
-            let session_id = BASE64_STANDARD.encode(&session_id_bytes.expose());
-
-            if let Err(_) = 
-            sqlx::query(r#"INSERT INTO sessions (user_id, session_id, created, expires) 
-            VALUES ($1, $2, now(), now() + interval '1 hour')"#)
-            .bind(&user_id)
-            .bind(&session_id).execute(&state.database).await
-            {
-                return (StatusCode::INTERNAL_SERVER_ERROR, "Internal server Error").into_response();
+            match create_session(user_id, &state.rng, &state.database).await {
+                Ok(session_id) => {
+                    return Response::builder()
+                    .status(200)
+                    .header("Content-Type", "application/json")
+                    .body(format!(r#"{{ "session_id" : "{}" }}"#, session_id)).unwrap().into_response();
+                },
+                Err(_) => {
+                    return (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error.").into_response();
+                }
             }
-
-            Response::builder()
-            .status(200)
-            .header("Content-Type", "application/json")
-            .body(format!(r#"{{ "session_id" : "{}" }}"#, session_id)).unwrap().into_response()
         },
         Err(err) => {
             error!(target: "auth", "Failed to authenticate user. Reason: {}", err.to_string());

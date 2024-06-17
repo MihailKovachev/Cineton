@@ -3,6 +3,5 @@ Host: localhost:31337
 Content-Type: application/json
 
 {
-    "username" : "",
-    "password" : ""
+    "session_id" : ""
 }

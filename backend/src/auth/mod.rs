@@ -5,11 +5,14 @@ use crate::SharedState;
 
 pub mod login;
 pub mod register;
+pub mod session;
+pub mod logout;
 
 pub fn routes() -> Router<Arc<SharedState>> {
     Router::new()
     .route("/register", post(register::auth_register))
     .route("/login", post(login::auth_login))
+    .route("/logout", post(logout::auth_logout))
 }
 
 #[derive(Debug)]
